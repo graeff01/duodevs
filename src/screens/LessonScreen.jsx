@@ -109,9 +109,21 @@ export default function LessonScreen({ goTo, gs, setGs }) {
             </div>
             <div>
               <div style={{ fontSize: 15, fontWeight: 800, color: correct ? '#065f46' : '#991b1b', marginBottom: 4 }}>
-                {correct ? 'Perfeito! 🎉' : 'Quase lá!'}
+                {correct ? 'Perfeito! 🎉' : `Por que "${q.opts[sel]}" está errado:`}
               </div>
-              <div style={{ fontSize: 13, color: correct ? '#065f46' : '#7f1d1d', lineHeight: 1.55 }}>{q.fb}</div>
+              {!correct && (
+                <div style={{ fontSize: 13, color: '#7f1d1d', lineHeight: 1.55, marginBottom: 6 }}>
+                  {q.optFb?.[sel] ?? q.fb}
+                </div>
+              )}
+              {!correct && (
+                <div style={{ fontSize: 12, color: '#991b1b', fontWeight: 700, lineHeight: 1.4 }}>
+                  Resposta correta: <span style={{ background: 'rgba(5,150,105,.15)', borderRadius: 4, padding: '1px 5px', color: '#065f46' }}>{q.opts[q.answer]}</span>
+                </div>
+              )}
+              {correct && (
+                <div style={{ fontSize: 13, color: '#065f46', lineHeight: 1.55 }}>{q.fb}</div>
+              )}
             </div>
           </div>
           <VisualExplain explain={q.explain} />
