@@ -145,11 +145,158 @@ const pyQuestions = [
   },
 ];
 
+const htmlQuestions = [
+  {
+    type: 'choice', q: 'Qual tag define um parágrafo em HTML?',
+    code: null,
+    opts: ['<p>', '<para>', '<text>', '<paragraph>'], answer: 0,
+    fb: '🎯 <p> é a tag de parágrafo. Sempre abra e feche: <p>...</p>',
+    explain: {
+      code: [
+        '~~<p>~~Olá, mundo!~~</p>~~',
+        '<!-- Renderiza como um parágrafo de texto -->',
+      ],
+      tip: '<p> = parágrafo  ·  sempre feche com </p>',
+    },
+  },
+  {
+    type: 'fill', q: 'Complete a tag de título principal:',
+    code: ['<___>Bem-vindo ao StackUp</___>'],
+    opts: ['h1', 'title', 'header', 'h0'], answer: 0,
+    fb: '✅ h1 é o título mais importante. A hierarquia vai de h1 (maior) a h6 (menor).',
+    explain: {
+      code: [
+        '~~<h1>~~Título Principal~~</h1>~~',
+        '<h2>Subtítulo</h2>',
+        '<h3>Seção menor</h3>',
+      ],
+      tip: 'Hierarquia: h1 > h2 > h3 > h4 > h5 > h6',
+    },
+  },
+  {
+    type: 'choice', q: 'Qual tag cria um link clicável?',
+    code: null,
+    opts: ['<a href="url">', '<link>', '<url>', '<go href="url">'], answer: 0,
+    fb: '💡 <a> com href cria hyperlinks. href = "Hypertext REFerence".',
+    explain: {
+      code: [
+        '~~<a href="https://stackup.dev">~~',
+        '  Clique aqui!',
+        '~~</a>~~',
+      ],
+      tip: '<a> = âncora  ·  href define o destino do link',
+    },
+  },
+  {
+    type: 'bug', q: 'Qual linha tem um erro de estrutura?',
+    code: ['<div>', '  <p>Texto</div>', '</p>'],
+    opts: ['Linha 1: div sem classe', 'Linha 2: </div> antes de </p>', 'Linha 3: </p> isolado', 'Sem erros'],
+    answer: 1,
+    fb: '🐛 Tags fecham na ordem inversa! Abriu p dentro de div → feche p antes de div.',
+    explain: {
+      code: [
+        '// ❌  <div><p>Texto!!</div></p>!!',
+        '// ✅  <div>~~<p>Texto</p>~~</div>',
+      ],
+      tip: 'LIFO: o último aberto é o primeiro a fechar',
+    },
+  },
+  {
+    type: 'output', q: 'O que a tag <strong> faz ao texto?',
+    code: ['<p>Olá <strong>Mundo</strong>!</p>'],
+    opts: ['"Mundo" fica em negrito', 'Texto some', 'Erro de HTML', 'Nada muda'], answer: 0,
+    fb: '🏆 <strong> deixa o texto em negrito e indica importância semântica.',
+    explain: {
+      code: [
+        '<p>Olá ~~<strong>~~Mundo~~</strong>~~!</p>',
+        '→ Olá ~~Mundo~~ (negrito)!',
+      ],
+      tip: '<strong> = negrito semântico  ·  <b> = só visual',
+    },
+  },
+];
+
+const cssQuestions = [
+  {
+    type: 'choice', q: 'Qual propriedade CSS muda a cor do texto?',
+    code: ['p { ___: blue; }'],
+    opts: ['color', 'text-color', 'font-color', 'foreground'], answer: 0,
+    fb: '🎯 color define a cor do texto. background-color define o fundo.',
+    explain: {
+      code: [
+        'p {',
+        '  ~~color~~: ~~blue~~;         /* texto azul */',
+        '  background-color: white; /* fundo branco */',
+        '}',
+      ],
+      tip: 'color = texto  ·  background-color = fundo',
+    },
+  },
+  {
+    type: 'fill', q: 'Complete para selecionar elementos com classe "titulo":',
+    code: ['___titulo { font-size: 24px; }'],
+    opts: ['.', '#', '@', '*'], answer: 0,
+    fb: '✅ Ponto (.) seleciona classe. # seleciona ID. Sem símbolo = tag HTML.',
+    explain: {
+      code: [
+        '~~.~~titulo { color: blue; }  /* classe */',
+        '~~#~~menu   { color: red;  }  /* ID */',
+        '~~p~~       { color: gray; }  /* tag HTML */',
+      ],
+      tip: '. = classe  ·  # = id  ·  sem símbolo = tag HTML',
+    },
+  },
+  {
+    type: 'output', q: 'O que este CSS cria visualmente?',
+    code: ['div {', '  width: 100px;', '  height: 100px;', '  background: #5b5cf6;', '}'],
+    opts: ['Um quadrado roxo 100×100px', 'Um texto roxo', 'Uma borda roxa', 'Nada visível'], answer: 0,
+    fb: '💡 width + height + background criam uma caixa colorida.',
+    explain: {
+      code: [
+        'div {',
+        '  ~~width: 100px~~;       /* largura */',
+        '  ~~height: 100px~~;      /* altura */',
+        '  ~~background: #5b5cf6~~; /* cor roxa */',
+        '}',
+      ],
+      tip: 'width + height + background = caixa colorida',
+    },
+  },
+  {
+    type: 'bug', q: 'Qual propriedade está escrita errada?',
+    code: ['p {', '  colour: blue;', '  font-size: 16px;', '}'],
+    opts: ['colour → deveria ser color', 'font-size está errado', 'Faltam aspas', 'Sem erros'], answer: 0,
+    fb: '🐛 CSS usa inglês americano: color (não colour). Erro silencioso — a linha é ignorada.',
+    explain: {
+      code: [
+        '// ❌  !!colour!!: blue;',
+        '// ✅  ~~color~~: blue;',
+      ],
+      tip: 'CSS ignora propriedades inválidas — sem erro no console',
+    },
+  },
+  {
+    type: 'choice', q: 'Como centralizar um elemento horizontalmente com margin?',
+    code: ['div { width: 300px; ___ }'],
+    opts: ['margin: 0 auto;', 'center: true;', 'align: center;', 'position: center;'], answer: 0,
+    fb: '🏆 margin: 0 auto centraliza (precisa de width definido).',
+    explain: {
+      code: [
+        'div {',
+        '  width: 300px;',
+        '  ~~margin: 0 auto~~; /* 0 vertical, auto lados */',
+        '}',
+      ],
+      tip: 'margin: 0 auto = zero topo/baixo, automático nas laterais',
+    },
+  },
+];
+
 export const QUESTIONS_BY_LANG = {
   js:            jsQuestions,
   ts:            jsQuestions,
-  html:          jsQuestions,
-  frontend_full: jsQuestions,
+  html:          htmlQuestions,
+  frontend_full: htmlQuestions,
   mobile_full:   jsQuestions,
   py:            pyQuestions,
   java:          pyQuestions,
@@ -163,6 +310,21 @@ export const QUESTIONS_BY_LANG = {
   systems_full:  pyQuestions,
   fullstack_full: jsQuestions,
 };
+
+export const QUESTIONS_BY_NODE = {
+  frontend:  { 0: htmlQuestions, 1: cssQuestions, 2: jsQuestions, 3: jsQuestions, 4: jsQuestions, 5: jsQuestions, 6: jsQuestions },
+  backend:   { 0: pyQuestions,   1: pyQuestions,  2: pyQuestions, 3: pyQuestions, 4: pyQuestions, 5: pyQuestions, 6: pyQuestions },
+  data:      { 0: pyQuestions,   1: pyQuestions,  2: pyQuestions, 3: pyQuestions, 4: pyQuestions, 5: pyQuestions, 6: pyQuestions },
+  mobile:    { 0: jsQuestions,   1: jsQuestions,  2: jsQuestions, 3: jsQuestions, 4: jsQuestions, 5: jsQuestions, 6: jsQuestions },
+  fullstack: { 0: htmlQuestions, 1: jsQuestions,  2: jsQuestions, 3: pyQuestions, 4: pyQuestions, 5: jsQuestions, 6: jsQuestions },
+  systems:   { 0: pyQuestions,   1: pyQuestions,  2: pyQuestions, 3: pyQuestions, 4: pyQuestions, 5: pyQuestions, 6: pyQuestions },
+};
+
+export function getNodeQuestions(track, nodeId, language) {
+  return QUESTIONS_BY_NODE[track]?.[nodeId ?? 0]
+    ?? QUESTIONS_BY_LANG[language]
+    ?? jsQuestions;
+}
 
 export const TRACKS = [
   {

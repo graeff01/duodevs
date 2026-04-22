@@ -3,7 +3,7 @@ import Stax from '../components/Stax';
 import CodeBlock from '../components/CodeBlock';
 import VisualExplain from '../components/VisualExplain';
 import { useTheme } from '../context/ThemeContext';
-import { QUESTIONS_BY_LANG } from '../data';
+import { getNodeQuestions } from '../data';
 
 export default function LessonScreen({ goTo, gs, setGs }) {
   const { t } = useTheme();
@@ -15,7 +15,7 @@ export default function LessonScreen({ goTo, gs, setGs }) {
   const [qKey, setQKey]       = useState(0);
   const [hearts, setHearts]   = useState(5);
 
-  const QUESTIONS = QUESTIONS_BY_LANG[gs.language] ?? QUESTIONS_BY_LANG.js;
+  const QUESTIONS = getNodeQuestions(gs.track, gs.activeNode ?? 0, gs.language);
   const q = QUESTIONS[qIdx];
   const isLast = qIdx === QUESTIONS.length - 1;
   const progress = (qIdx / QUESTIONS.length) * 100;

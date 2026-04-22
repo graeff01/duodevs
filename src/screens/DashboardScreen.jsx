@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Stax from '../components/Stax';
 import BottomNav from '../components/BottomNav';
 import { useTheme } from '../context/ThemeContext';
-import { LANGS } from '../data';
+import { LANGS, TRACKS, NODES_BY_TRACK } from '../data';
 
 const WEEK_LABELS = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
 const WEEK_XP     = [55, 80, 35, 100, 70, 90, 0];
@@ -14,6 +14,14 @@ export default function DashboardScreen({ goTo, gs }) {
   const [bars, setBars] = useState(WEEK_XP.map(() => 0));
   const pct  = Math.round((gs.xp / gs.xpMax) * 100);
   const lang = LANGS.find(l => l.id === gs.language) ?? LANGS[0];
+
+  const track      = TRACKS.find(tr => tr.id === gs.track);
+  const trackNodes = NODES_BY_TRACK[gs.track] ?? NODES_BY_TRACK.frontend;
+  const activeNode = trackNodes.find(n => n.id === (gs.activeNode ?? 0)) ?? trackNodes[0];
+  const completedCount = (gs.completedNodes ?? []).length;
+  const totalNodes     = trackNodes.length;
+  const mapPct         = Math.round((completedCount / totalNodes) * 100);
+  const heroTitle      = track ? `${track.label} · ${activeNode.label}` : `${lang.label} · ${activeNode.label}`;
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
@@ -146,7 +154,7 @@ export default function DashboardScreen({ goTo, gs }) {
               }}>⚡ Próxima aula</div>
 
               <div style={{ fontSize: 20, fontWeight: 800, color: 'white', marginBottom: 6, lineHeight: 1.2 }}>
-                {lang.label} · Arrays
+                {heroTitle}
               </div>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
@@ -276,14 +284,16 @@ export default function DashboardScreen({ goTo, gs }) {
               Ver trilha completa
             </div>
             <div style={{ fontSize: 11, color: t.textMuted, marginBottom: 8 }}>
-              2 de 7 tópicos · 29% completo
+              {completedCount} de {totalNodes} tópicos · {mapPct}% completo
             </div>
             <div style={{ display: 'flex', gap: 3 }}>
-              {[1, 1, 0, 0, 0, 0, 0].map((done, i) => (
-                <div key={i} style={{
+              {trackNodes.map(n => (
+                <div key={n.id} style={{
                   flex: 1, height: 4, borderRadius: 2,
-                  background: done ? '#10b981' : t.isDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb',
-                  transition: `width 0.8s ${i * 0.1}s ease`,
+                  background: (gs.completedNodes ?? []).includes(n.id)
+                    ? '#10b981'
+                    : t.isDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb',
+                  transition: `background 0.4s ease`,
                 }} />
               ))}
             </div>
