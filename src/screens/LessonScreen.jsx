@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import Stax from '../components/Stax';
 import CodeBlock from '../components/CodeBlock';
+import VisualExplain from '../components/VisualExplain';
 import { useTheme } from '../context/ThemeContext';
-import { QUESTIONS } from '../data';
+import { QUESTIONS_BY_LANG } from '../data';
 
 export default function LessonScreen({ goTo, gs, setGs }) {
   const { t } = useTheme();
@@ -14,6 +15,7 @@ export default function LessonScreen({ goTo, gs, setGs }) {
   const [qKey, setQKey]       = useState(0);
   const [hearts, setHearts]   = useState(5);
 
+  const QUESTIONS = QUESTIONS_BY_LANG[gs.language] ?? QUESTIONS_BY_LANG.js;
   const q = QUESTIONS[qIdx];
   const isLast = qIdx === QUESTIONS.length - 1;
   const progress = (qIdx / QUESTIONS.length) * 100;
@@ -29,7 +31,17 @@ export default function LessonScreen({ goTo, gs, setGs }) {
   const cont = () => {
     if (isLast) {
       const earned = (score + (correct ? 1 : 0)) * 22 + 10;
-      setGs(s => ({ ...s, xp: Math.min(s.xp + earned, s.xpMax), coins: s.coins + Math.round(earned / 2) }));
+      setGs(s => {
+        const completed = [...new Set([...(s.completedNodes ?? []), s.activeNode ?? 0])];
+        const nextActive = (s.activeNode ?? 0) + 1;
+        return {
+          ...s,
+          xp: Math.min(s.xp + earned, s.xpMax),
+          coins: s.coins + Math.round(earned / 2),
+          completedNodes: completed,
+          activeNode: nextActive,
+        };
+      });
       goTo('completion', 'right');
     } else {
       setQIdx(q => q + 1); setSel(null); setShowFb(false); setCorrect(false); setQKey(k => k + 1);
@@ -87,8 +99,11 @@ export default function LessonScreen({ goTo, gs, setGs }) {
       </div>
 
       {showFb && (
-        <div className={`fb-panel ${correct ? 'fb-correct' : 'fb-wrong'}`}>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 14 }}>
+        <div
+          className={`fb-panel ${correct ? 'fb-correct' : 'fb-wrong'}`}
+          style={{ maxHeight: '74%', overflowY: 'auto' }}
+        >
+          <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
             <div style={{ flexShrink: 0, marginTop: 2 }}>
               <Stax size={44} mood={correct ? 'excited' : 'sad'} />
             </div>
@@ -99,7 +114,8 @@ export default function LessonScreen({ goTo, gs, setGs }) {
               <div style={{ fontSize: 13, color: correct ? '#065f46' : '#7f1d1d', lineHeight: 1.55 }}>{q.fb}</div>
             </div>
           </div>
-          <button className={`btn ${correct ? 'btn-green' : 'btn-primary'}`} onClick={cont}>
+          <VisualExplain explain={q.explain} />
+          <button className={`btn ${correct ? 'btn-green' : 'btn-primary'}`} onClick={cont} style={{ marginTop: 14 }}>
             {isLast ? 'Ver resultado! 🏆' : 'Continuar →'}
           </button>
         </div>

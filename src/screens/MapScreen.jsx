@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import BottomNav from '../components/BottomNav';
-import { LANGS } from '../data';
+import { LANGS, NODES_BY_TRACK, NODE_OFFSETS, TRACKS } from '../data';
 
-/* ─── Node definitions ─── */
-const NODES = [
-  { id: 0, label: 'Variáveis', emoji: '📦', state: 'done',   offset:  90, xp: 240, lessons: 5, stars: 3 },
-  { id: 1, label: 'Condições', emoji: '🔀', state: 'done',   offset: -90, xp: 180, lessons: 4, stars: 2 },
-  { id: 2, label: 'Arrays',    emoji: '📋', state: 'active', offset:   0, xp: 210, lessons: 5, stars: 0 },
-  { id: 3, label: 'Funções',   emoji: '⚙️', state: 'locked', offset:  85, xp: 260, lessons: 6, stars: 0 },
-  { id: 4, label: 'Loops',     emoji: '🔁', state: 'locked', offset: -85, xp: 290, lessons: 5, stars: 0 },
-  { id: 5, label: 'Objetos',   emoji: '🗂️', state: 'locked', offset:   0, xp: 320, lessons: 7, stars: 0 },
-  { id: 6, label: 'Boss',      emoji: '👑', state: 'locked', offset:   0, xp: 500, lessons: 1, stars: 0, boss: true },
-];
+/* Build dynamic node list from gs progress */
+function buildNodes(gs) {
+  const base = NODES_BY_TRACK[gs.track] ?? NODES_BY_TRACK.frontend;
+  const completed = gs.completedNodes ?? [];
+  const active = gs.activeNode ?? 0;
+  return base.map((n, idx) => {
+    let state = 'locked';
+    if (completed.includes(n.id)) state = 'done';
+    else if (n.id === active)     state = 'active';
+    return { ...n, state, stars: state === 'done' ? 3 : 0, offset: NODE_OFFSETS[idx] ?? 0 };
+  });
+}
 
 /* Node color/gradient by state */
 const nodeStyle = (node) => {
@@ -23,8 +25,8 @@ const nodeStyle = (node) => {
 };
 
 /* Connector state between nodes i → i+1 */
-const connState = (i) => {
-  const a = NODES[i].state, b = NODES[i + 1].state;
+const connState = (nodes, i) => {
+  const a = nodes[i].state;
   if (a === 'done')   return 'done';
   if (a === 'active') return 'active';
   return 'locked';
@@ -350,7 +352,10 @@ function MapBg({ isDark }) {
 /* ─── Main MapScreen ─── */
 export default function MapScreen({ goTo, gs }) {
   const { t } = useTheme();
-  const lang = LANGS.find(l => l.id === gs.language) || LANGS[0];
+  const NODES = buildNodes(gs);
+  const track = TRACKS.find(tr => tr.id === gs.track);
+  const lang  = LANGS.find(l => l.id === gs.language) || LANGS[0];
+  const headerLabel = track ? track.label : lang.label;
   const done  = NODES.filter(n => n.state === 'done').length;
   const total = NODES.length;
   const pct   = Math.round((done / total) * 100);
@@ -378,7 +383,7 @@ export default function MapScreen({ goTo, gs }) {
             flexShrink: 0,
           }}>←</button>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 17, fontWeight: 800, color: t.text }}>{lang.label}</div>
+            <div style={{ fontSize: 17, fontWeight: 800, color: t.text }}>{headerLabel}</div>
             <div style={{ fontSize: 11, color: t.textMuted }}>{done} de {total} tópicos · {pct}% completo</div>
           </div>
           <span className="tag tag-xp">⚡ {gs.xp} XP</span>
@@ -428,7 +433,7 @@ export default function MapScreen({ goTo, gs }) {
                 <Connector
                   fromOffset={node.offset}
                   toOffset={NODES[idx + 1].offset}
-                  state={connState(idx)}
+                  state={connState(NODES, idx)}
                 />
               )}
             </div>
