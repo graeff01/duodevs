@@ -1,0 +1,338 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+/* ─── Reset & Base ─── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  height: 100%;
+  /* dvh = dynamic viewport height, accounts for mobile browser chrome */
+  height: 100dvh;
+  /* Prevent font scaling on orientation change */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  font-family: 'Space Grotesk', sans-serif;
+  background: #07061a;
+  background-image:
+    radial-gradient(ellipse 70% 60% at 20% 20%, rgba(91,92,246,.16) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(16,185,129,.1) 0%, transparent 65%),
+    radial-gradient(ellipse 40% 50% at 60% 10%, rgba(139,92,246,.1) 0%, transparent 60%);
+  display: flex; align-items: center; justify-content: center;
+  /* Disable text selection across the app */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Remove tap highlight (iOS) */
+  -webkit-tap-highlight-color: transparent;
+  /* Prevent overscroll/bounce on iOS */
+  overscroll-behavior: none;
+  /* Prevent pull-to-refresh */
+  touch-action: pan-x pan-y;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── CSS Variables ─── */
+:root {
+  --opt-bg:          #ffffff;
+  --opt-border:      #e4e3f7;
+  --opt-text:        #1a1740;
+  --xp-track:        #e4e3f7;
+  --code-bg:         #12102a;
+  --nav-bg:          #ffffff;
+  --nav-border:      rgba(0,0,0,.07);
+  --fb-correct-bg:   #d1fae5;
+  --fb-correct-top:  #10b981;
+  --fb-wrong-bg:     #fee2e2;
+  --fb-wrong-top:    #ef4444;
+}
+
+[data-theme="dark"] {
+  --opt-bg:          #1c1940;
+  --opt-border:      rgba(255,255,255,.1);
+  --opt-text:        #f0efff;
+  --xp-track:        rgba(255,255,255,.1);
+  --code-bg:         #07061a;
+  --nav-bg:          #12102a;
+  --nav-border:      rgba(255,255,255,.08);
+  --fb-correct-bg:   rgba(16,185,129,.15);
+  --fb-correct-top:  #10b981;
+  --fb-wrong-bg:     rgba(239,68,68,.15);
+  --fb-wrong-top:    #ef4444;
+}
+
+/* ─── Floating bg code ─── */
+.bg-code { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.bg-code span {
+  position: absolute; font-family: 'JetBrains Mono', monospace;
+  color: rgba(91,92,246,.07); font-size: 13px; white-space: nowrap;
+  animation: floatCode linear infinite;
+}
+
+/* ─── App shell ─── */
+
+/* Mobile: fills the full screen (PWA + browser) */
+.phone {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  background: #0a0820;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  z-index: 1;
+}
+.phone-notch { display: none; }
+
+/* Desktop: phone mockup frame */
+@media (min-width: 600px) {
+  .phone {
+    width: auto;
+    height: min(820px, 91dvh);
+    aspect-ratio: 390 / 844;
+    border-radius: calc(min(820px, 91dvh) * .062);
+    border: 6px solid #1c194a;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.04),
+      0 50px 140px rgba(0,0,0,.75),
+      0 0 80px rgba(91,92,246,.22),
+      inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .phone-notch {
+    display: block;
+    position: absolute; top: 9px; left: 50%; transform: translateX(-50%);
+    width: 29%; max-height: 28px; height: 3.5%;
+    background: #0a0820; border-radius: 99px; z-index: 200;
+  }
+}
+
+.phone-inner {
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  overflow: hidden; display: flex; flex-direction: column;
+}
+
+/* ─── Animations ─── */
+@keyframes slideRight   { from { transform: translateX(100%);  opacity: .4 } to { transform: translateX(0); opacity: 1 } }
+@keyframes slideLeft    { from { transform: translateX(-100%); opacity: .4 } to { transform: translateX(0); opacity: 1 } }
+@keyframes fadeUp       { from { transform: translateY(18px);  opacity: 0  } to { transform: translateY(0); opacity: 1 } }
+@keyframes fadeIn       { from { opacity: 0 } to { opacity: 1 } }
+@keyframes popIn        { 0% { transform: scale(.6); opacity: 0 } 60% { transform: scale(1.06) } 100% { transform: scale(1); opacity: 1 } }
+@keyframes shake        { 0%,100% { transform: translateX(0) } 20% { transform: translateX(-7px) } 40% { transform: translateX(7px) } 60% { transform: translateX(-4px) } 80% { transform: translateX(4px) } }
+@keyframes correctPop   { 0% { transform: scale(1) } 40% { transform: scale(1.04) } 100% { transform: scale(1) } }
+@keyframes pulse2       { 0%,100% { opacity: 1; transform: scale(1) } 50% { opacity: .5; transform: scale(.88) } }
+@keyframes staxFloat    { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-9px) } }
+@keyframes antGlow      { 0%,100% { filter: drop-shadow(0 0 6px #5b5cf6) } 50% { filter: drop-shadow(0 0 14px #8b5cf6) } }
+@keyframes confettiFall {
+  0%   { transform: translateY(-20px) translateX(0) rotate(0deg); opacity: 1 }
+  100% { transform: translateY(110vh) translateX(var(--drift, 0px)) rotate(720deg); opacity: 0 }
+}
+@keyframes xpCount      { from { opacity: 0; transform: scale(.7) } to { opacity: 1; transform: scale(1) } }
+@keyframes floatCode    { from { transform: translateY(110vh) } to { transform: translateY(-120px) } }
+@keyframes slideUpPanel { from { transform: translateY(100%) } to { transform: translateY(0) } }
+@keyframes mapNodePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(91,92,246,.5) } 70% { box-shadow: 0 0 0 12px rgba(91,92,246,0) } }
+@keyframes streakFlame  { 0%,100% { transform: scaleY(1) rotate(-2deg) } 50% { transform: scaleY(1.1) rotate(2deg) } }
+@keyframes tabPop       { 0% { transform: scale(.85) } 60% { transform: scale(1.12) } 100% { transform: scale(1) } }
+@keyframes swipeHint    { 0% { opacity: 0; transform: translateX(-8px) } 50% { opacity: 1 } 100% { opacity: 0; transform: translateX(8px) } }
+
+.anim-right { animation: slideRight .32s cubic-bezier(.22,1,.36,1) both }
+.anim-left  { animation: slideLeft  .32s cubic-bezier(.22,1,.36,1) both }
+.anim-up    { animation: fadeUp     .3s  cubic-bezier(.22,1,.36,1) both }
+
+/* Ensure all screen roots participate correctly in flex layout */
+.anim-right > *, .anim-left > *, .anim-up > * {
+  min-height: 0;
+}
+
+/* ─── Status bar ─── */
+.sbar {
+  height: 44px; padding: 26px 22px 0;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+/* On real mobile as PWA, the system handles the status bar */
+@media (max-width: 599px) {
+  .sbar { padding-top: max(26px, env(safe-area-inset-top)); }
+}
+.sbar-time   { letter-spacing: .01em }
+.sbar-icons  { display: flex; gap: 3px; align-items: center; font-size: 11px }
+
+/* ─── Scroll ─── */
+.scroll {
+  flex: 1;
+  min-height: 0;        /* critical: lets flex item shrink below content height */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+.scroll::-webkit-scrollbar { display: none }
+
+/* ─── Buttons ─── */
+.btn {
+  width: 100%; padding: 15px 20px; border-radius: 16px; border: none;
+  font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 800;
+  cursor: pointer; transition: transform .12s, filter .12s;
+  position: relative; overflow: hidden;
+  /* Prevent double-tap zoom */
+  touch-action: manipulation;
+}
+.btn:active { transform: scale(.96); filter: brightness(.92) }
+.btn-primary { background: #5b5cf6; color: white; box-shadow: 0 4px 20px rgba(91,92,246,.4) }
+.btn-green   { background: #10b981; color: white; box-shadow: 0 4px 20px rgba(16,185,129,.35) }
+.btn-red     { background: #ef4444; color: white }
+.btn-ghost   { background: rgba(255,255,255,.08); color: rgba(255,255,255,.7); border: 1.5px solid rgba(255,255,255,.15) }
+.btn:disabled { opacity: .35; cursor: default; transform: none !important; filter: none !important; box-shadow: none }
+
+/* ─── Answer options ─── */
+.opt {
+  width: 100%; padding: 14px 18px; border-radius: 14px; text-align: left;
+  background: var(--opt-bg); border: 2.5px solid var(--opt-border);
+  font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600; color: var(--opt-text);
+  cursor: pointer; transition: border-color .15s, background .15s, transform .1s;
+  display: flex; align-items: center; gap: 12px;
+  touch-action: manipulation;
+}
+.opt:active:not(:disabled) { transform: scale(.97) }
+.opt.correct { border-color: #10b981; background: #d1fae5; color: #064e3b; animation: correctPop .3s ease }
+.opt.wrong   { border-color: #ef4444; background: #fee2e2; color: #991b1b; animation: shake .4s ease }
+.opt.reveal  { border-color: #10b981; background: #d1fae5; color: #064e3b }
+[data-theme="dark"] .opt.correct { background: rgba(16,185,129,.2); color: #6ee7b7 }
+[data-theme="dark"] .opt.wrong   { background: rgba(239,68,68,.2);  color: #fca5a5 }
+[data-theme="dark"] .opt.reveal  { background: rgba(16,185,129,.2); color: #6ee7b7 }
+.opt:disabled { cursor: default }
+
+/* ─── XP bar ─── */
+.xptrack { height: 10px; background: var(--xp-track); border-radius: 5px; overflow: hidden }
+.xpfill  { height: 100%; border-radius: 5px; background: linear-gradient(90deg, #5b5cf6, #8b5cf6); transition: width 1.2s cubic-bezier(.4,0,.2,1) }
+
+/* ─── Code block ─── */
+.code {
+  background: var(--code-bg); border-radius: 13px; padding: 14px 16px;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.85;
+  color: #a5b4fc; margin: 12px 0;
+}
+.kw  { color: #f472b6 } .fn { color: #7dd3fc } .str { color: #86efac } .num { color: #fdba74 }
+
+/* ─── Bottom nav ─── */
+.bnav {
+  height: 60px;
+  /* Extra padding for home indicator (iPhone) */
+  padding-bottom: max(6px, env(safe-area-inset-bottom));
+  height: calc(60px + max(6px, env(safe-area-inset-bottom)));
+  border-top: 1px solid var(--nav-border);
+  background: var(--nav-bg);
+  display: flex; align-items: center; justify-content: space-around;
+  flex-shrink: 0;
+  /* Blur for glass effect */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.bni {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 600; color: var(--nav-text, #9ca3af);
+  cursor: pointer; padding: 4px 14px;
+  transition: color .2s;
+  touch-action: manipulation;
+  position: relative;
+}
+.bni.on { color: #5b5cf6 }
+.bni.on svg { animation: tabPop .3s cubic-bezier(.34,1.56,.64,1) }
+
+/* Active dot indicator */
+.bni.on::after {
+  content: '';
+  position: absolute; bottom: -2px;
+  width: 4px; height: 4px; border-radius: 50%;
+  background: #5b5cf6;
+  animation: fadeIn .2s ease;
+}
+
+/* ─── Tags ─── */
+.tag        { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 800 }
+.tag-streak { background: linear-gradient(135deg, #ff6b35, #f59e0b); color: white }
+.tag-coin   { background: #fef9c3; color: #78350f }
+.tag-xp     { background: #eef2ff; color: #5b5cf6 }
+[data-theme="dark"] .tag-coin { background: rgba(253,230,138,.15); color: #fde68a }
+[data-theme="dark"] .tag-xp   { background: rgba(91,92,246,.15); color: #a5b4fc }
+
+/* ─── Feedback panel ─── */
+.fb-panel {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 20px 22px 30px;
+  border-radius: 22px 22px 0 0;
+  animation: slideUpPanel .3s cubic-bezier(.22,1,.36,1) both;
+}
+.fb-correct { background: var(--fb-correct-bg); border-top: 3px solid var(--fb-correct-top) }
+.fb-wrong   { background: var(--fb-wrong-bg);   border-top: 3px solid var(--fb-wrong-top) }
+
+/* ─── Onboarding dots ─── */
+.odots { display: flex; gap: 7px; justify-content: center }
+.odot  { width: 8px; height: 8px; border-radius: 4px; background: var(--xp-track); transition: all .35s }
+.odot.on   { width: 26px; background: #5b5cf6 }
+.odot.done { background: #c4b5fd }
+
+/* ─── Map node ─── */
+.mnode {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 22px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.18);
+  cursor: pointer; flex-shrink: 0; transition: transform .15s;
+  touch-action: manipulation;
+}
+.mnode:active { transform: scale(.9) }
+
+/* ─── Toggle ─── */
+.toggle-track {
+  width: 52px; height: 28px; border-radius: 14px;
+  position: relative; cursor: pointer; transition: background .3s;
+  flex-shrink: 0; touch-action: manipulation;
+}
+.toggle-thumb {
+  position: absolute; top: 3px; width: 22px; height: 22px;
+  border-radius: 50%; background: white;
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  transition: left .3s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ─── Swipe back indicator ─── */
+.swipe-indicator {
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 4px; height: 48px; background: rgba(91,92,246,.6);
+  border-radius: 0 4px 4px 0; z-index: 999;
+  animation: swipeHint 1s ease-in-out;
+  pointer-events: none;
+}
+
+/* ─── Ripple effect on touch ─── */
+.ripple {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,.3);
+  transform: scale(0);
+  animation: rippleAnim .5s linear;
+  pointer-events: none;
+}
+@keyframes rippleAnim { to { transform: scale(4); opacity: 0 } }
+
+/* ─── Install prompt banner ─── */
+.install-banner {
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 1000;
+  padding: 16px 20px max(16px, env(safe-area-inset-bottom));
+  background: #1c1940; border-top: 1px solid rgba(91,92,246,.3);
+  animation: slideUpPanel .3s ease;
+  display: flex; align-items: center; gap: 14;
+}
