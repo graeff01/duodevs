@@ -314,6 +314,12 @@ export default function ProfileScreen({ goTo, gs, setGs }) {
             <SettingRow icon="🗑️" label="Resetar progresso" t={t} onClick={handleReset} danger last />
           </div>
 
+          {/* Showcase */}
+          <div style={{ fontSize: 11, fontWeight: 800, color: t.textFaint, textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 8, paddingLeft: 2, marginTop: 6 }}>App</div>
+          <div style={{ background: t.surface, borderRadius: 18, overflow: 'hidden', boxShadow: t.cardShadow, marginBottom: 16 }}>
+            <SettingRow icon="🖼️" label="Ver todas as telas" t={t} onClick={() => goTo('showcase', 'right')} last />
+          </div>
+
           {/* Footer */}
           <div style={{ textAlign: 'center', padding: '4px 0 8px' }}>
             <div style={{ fontSize: 11, color: t.textFaint }}>StackUp v1.0.0</div>

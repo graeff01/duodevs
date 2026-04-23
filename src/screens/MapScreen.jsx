@@ -292,27 +292,23 @@ const MAP_LABELS = [
   { x: 148, y: 630, text: 'CAVERNA DARK' },
 ];
 
-function CompassRose({ isDark }) {
-  const c = isDark ? '#a5b4fc' : '#8b5a2b';
-  const r = isDark ? '#f87171' : '#c0392b';
+function CompassRose() {
+  const c = '#6ab848';
+  const r = '#f87171';
   return (
     <svg width="60" height="60" viewBox="0 0 60 60">
-      <circle cx="30" cy="30" r="27" fill="none" stroke={c} strokeWidth="1"   opacity="0.5" />
-      <circle cx="30" cy="30" r="21" fill="none" stroke={c} strokeWidth="0.6" opacity="0.3" />
-      {/* Cardinal points */}
+      <circle cx="30" cy="30" r="27" fill="none" stroke={c} strokeWidth="1"   opacity="0.55" />
+      <circle cx="30" cy="30" r="21" fill="none" stroke={c} strokeWidth="0.6" opacity="0.32" />
       <path d="M 30 3  L 34 24 L 30 20 L 26 24 Z" fill={r} opacity="0.9" />
       <path d="M 30 57 L 34 36 L 30 40 L 26 36 Z" fill={c} opacity="0.65" />
       <path d="M 57 30 L 36 34 L 40 30 L 36 26 Z" fill={c} opacity="0.65" />
       <path d="M 3  30 L 24 34 L 20 30 L 24 26 Z" fill={c} opacity="0.65" />
-      {/* Ordinal points */}
       <path d="M 51 9  L 35 26 L 34 23 L 37 22 Z" fill={c} opacity="0.35" />
       <path d="M 51 51 L 35 34 L 38 33 L 37 36 Z" fill={c} opacity="0.35" />
       <path d="M 9  51 L 25 34 L 26 37 L 23 36 Z" fill={c} opacity="0.35" />
       <path d="M 9  9  L 25 26 L 22 27 L 23 24 Z" fill={c} opacity="0.35" />
-      {/* Center */}
       <circle cx="30" cy="30" r="4.5" fill={c} opacity="0.85" />
       <circle cx="30" cy="30" r="2.2" fill="white" opacity="0.7" />
-      {/* Labels */}
       <text x="30" y="9"  textAnchor="middle" fontSize="7"   fontWeight="900" fill={r} fontFamily="Georgia,serif">N</text>
       <text x="30" y="57" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={c} fontFamily="Georgia,serif">S</text>
       <text x="55" y="33" textAnchor="middle" fontSize="6.5" fontWeight="700" fill={c} fontFamily="Georgia,serif">L</text>
@@ -322,7 +318,31 @@ function CompassRose({ isDark }) {
 }
 
 function MapBg({ isDark }) {
-  const stroke = isDark ? 'rgba(147,112,219,0.22)' : 'rgba(110,75,28,0.2)';
+  const terrainFill = (l, total) => {
+    const pct = l / Math.max(total - 1, 1);
+    if (isDark) {
+      if (pct < 0.25) return 'rgba(16,52,12,0.72)';
+      if (pct < 0.5)  return 'rgba(28,72,16,0.64)';
+      if (pct < 0.7)  return 'rgba(62,88,18,0.56)';
+      if (pct < 0.88) return 'rgba(98,72,28,0.5)';
+      return 'rgba(88,74,62,0.44)';
+    } else {
+      if (pct < 0.25) return 'rgba(90,155,42,0.55)';
+      if (pct < 0.5)  return 'rgba(115,165,48,0.48)';
+      if (pct < 0.7)  return 'rgba(148,162,52,0.42)';
+      if (pct < 0.88) return 'rgba(162,128,58,0.38)';
+      return 'rgba(138,108,82,0.34)';
+    }
+  };
+
+  const terrainStroke  = isDark ? 'rgba(28,72,16,0.48)'  : 'rgba(65,108,28,0.32)';
+  const gridStroke     = isDark ? 'rgba(16,52,12,0.16)'  : 'rgba(70,115,32,0.1)';
+  const dotColor       = isDark ? 'rgba(78,140,48,0.28)' : 'rgba(60,110,28,0.24)';
+  const labelColor     = isDark ? 'rgba(98,168,55,0.26)' : 'rgba(58,98,18,0.28)';
+  const waterFill      = isDark ? 'rgba(14,82,155,0.34)' : 'rgba(48,128,208,0.3)';
+  const waterGlow      = isDark ? 'rgba(22,105,185,0.18)': 'rgba(65,152,232,0.18)';
+  const riverColor     = isDark ? 'rgba(28,110,195,0.52)': 'rgba(50,132,214,0.5)';
+  const riverHighlight = 'rgba(160,210,255,0.1)';
 
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
@@ -332,24 +352,39 @@ function MapBg({ isDark }) {
       >
         <defs>
           <pattern id="mapgrid" width="40" height="40" patternUnits="userSpaceOnUse">
-            <path d="M 40 0 L 0 0 0 40" fill="none"
-              stroke={isDark ? 'rgba(100,80,200,0.07)' : 'rgba(100,70,30,0.06)'}
-              strokeWidth="0.8" />
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke={gridStroke} strokeWidth="0.8" />
           </pattern>
         </defs>
 
-        {/* Grid */}
         <rect width="400" height="900" fill="url(#mapgrid)" />
 
-        {/* Topographic contours */}
+        {/* Lakes / water bodies */}
+        <ellipse cx="86"  cy="358" rx="54" ry="31" fill={waterGlow} />
+        <ellipse cx="86"  cy="358" rx="44" ry="24" fill={waterFill} />
+        <ellipse cx="314" cy="542" rx="46" ry="27" fill={waterGlow} />
+        <ellipse cx="314" cy="542" rx="37" ry="21" fill={waterFill} />
+
+        {/* River — glow then main then highlight */}
+        <path d="M 162 0 Q 188 145 158 278 Q 122 418 148 558 Q 168 682 132 900"
+          fill="none" stroke={waterGlow} strokeWidth="22" strokeLinecap="round" />
+        <path d="M 162 0 Q 188 145 158 278 Q 122 418 148 558 Q 168 682 132 900"
+          fill="none" stroke={riverColor} strokeWidth="7" strokeLinecap="round" />
+        <path d="M 162 0 Q 188 145 158 278 Q 122 418 148 558 Q 168 682 132 900"
+          fill="none" stroke={riverHighlight} strokeWidth="2" strokeLinecap="round" />
+
+        {/* Tributary */}
+        <path d="M 400 298 Q 312 338 274 375 Q 226 398 158 378"
+          fill="none" stroke={riverColor} strokeWidth="4" strokeLinecap="round" opacity="0.75" />
+        <path d="M 400 298 Q 312 338 274 375 Q 226 398 158 378"
+          fill="none" stroke={waterGlow} strokeWidth="11" strokeLinecap="round" />
+
+        {/* Topographic contours — terrain palette */}
         {CONTOURS.map((hillLevels, hi) =>
           hillLevels.map(({ d, l }) => (
             <path key={`${hi}-${l}`} d={d}
-              fill={isDark
-                ? `rgba(91,92,246,${Math.max(0.005, 0.048 - l * 0.009)})`
-                : `rgba(148,102,32,${Math.max(0.005, 0.056 - l * 0.01)})`}
-              stroke={stroke}
-              strokeWidth={l === 0 ? 1.4 : 0.9}
+              fill={terrainFill(l, hillLevels.length)}
+              stroke={terrainStroke}
+              strokeWidth={l === 0 ? 1.25 : 0.8}
             />
           ))
         )}
@@ -358,44 +393,41 @@ function MapBg({ isDark }) {
         {Array.from({ length: 10 }, (_, i) =>
           Array.from({ length: 5 }, (_, j) => (
             <circle key={`dot-${i}-${j}`}
-              cx={40 + j * 80} cy={40 + i * 88} r="1.8"
-              fill={isDark ? 'rgba(147,112,219,0.25)' : 'rgba(110,75,28,0.22)'}
+              cx={40 + j * 80} cy={40 + i * 88} r="1.6"
+              fill={dotColor}
             />
           ))
         )}
 
-        {/* Map labels */}
+        {/* Region labels */}
         {MAP_LABELS.map(({ x, y, text }) => (
           <text key={text} x={x} y={y} textAnchor="middle"
             fontSize="7.5" fontWeight="700" letterSpacing="0.14em"
-            fontFamily="Georgia, serif"
-            fill={isDark ? 'rgba(147,112,219,0.25)' : 'rgba(110,75,28,0.22)'}
+            fontFamily="Georgia, serif" fill={labelColor}
           >{text}</text>
         ))}
 
         {/* Scale bar */}
-        <g transform="translate(18, 858)" opacity={isDark ? 0.32 : 0.26}>
-          <rect x="0"  y="0" width="60" height="4" rx="2"
-            fill={isDark ? '#a5b4fc' : '#8b5a2b'} />
-          <rect x="0"  y="0" width="30" height="4" rx="2"
-            fill={isDark ? '#6366f1' : '#5a3a1a'} />
-          <text y="13" fontSize="6" fill={isDark ? '#a5b4fc' : '#8b5a2b'} fontFamily="Georgia,serif">0</text>
-          <text x="25" y="13" fontSize="6" fill={isDark ? '#a5b4fc' : '#8b5a2b'} fontFamily="Georgia,serif">500m</text>
-          <text x="55" y="13" fontSize="6" fill={isDark ? '#a5b4fc' : '#8b5a2b'} fontFamily="Georgia,serif">1km</text>
+        <g transform="translate(18, 858)" opacity={isDark ? 0.4 : 0.3}>
+          <rect x="0"  y="0" width="60" height="4" rx="2" fill={isDark ? '#4a8a38' : '#5a8a28'} />
+          <rect x="0"  y="0" width="30" height="4" rx="2" fill={isDark ? '#2a6018' : '#3a7015'} />
+          <text y="13" fontSize="6" fill={isDark ? '#6ab848' : '#4a7a20'} fontFamily="Georgia,serif">0</text>
+          <text x="25" y="13" fontSize="6" fill={isDark ? '#6ab848' : '#4a7a20'} fontFamily="Georgia,serif">500m</text>
+          <text x="55" y="13" fontSize="6" fill={isDark ? '#6ab848' : '#4a7a20'} fontFamily="Georgia,serif">1km</text>
         </g>
       </svg>
 
-      {/* Compass rose */}
-      <div style={{ position: 'absolute', bottom: 80, right: 10, opacity: isDark ? 0.38 : 0.3 }}>
-        <CompassRose isDark={isDark} />
+      {/* Compass */}
+      <div style={{ position: 'absolute', bottom: 80, right: 10, opacity: isDark ? 0.42 : 0.34 }}>
+        <CompassRose />
       </div>
 
-      {/* Edge vignette */}
+      {/* Vignette */}
       <div style={{
         position: 'absolute', inset: 0,
         background: isDark
-          ? 'radial-gradient(ellipse 90% 80% at 50% 45%, transparent 55%, rgba(10,8,32,0.55) 100%)'
-          : 'radial-gradient(ellipse 90% 80% at 50% 45%, transparent 55%, rgba(220,200,150,0.45) 100%)',
+          ? 'radial-gradient(ellipse 90% 80% at 50% 45%, transparent 48%, rgba(4,12,4,0.65) 100%)'
+          : 'radial-gradient(ellipse 90% 80% at 50% 45%, transparent 48%, rgba(130,185,80,0.38) 100%)',
       }} />
     </div>
   );
@@ -413,7 +445,7 @@ export default function MapScreen({ goTo, gs }) {
   const pct   = Math.round((done / total) * 100);
 
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: t.isDark ? '#0a0820' : '#ece5cf', position: 'relative' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, background: t.isDark ? '#091408' : '#d4ebb0', position: 'relative' }}>
 
       {/* Map texture — fixed behind everything, does NOT scroll */}
       <MapBg isDark={t.isDark} />

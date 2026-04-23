@@ -10,6 +10,7 @@ import LessonScreen     from './screens/LessonScreen';
 import CompletionScreen from './screens/CompletionScreen';
 import RankingScreen    from './screens/RankingScreen';
 import ProfileScreen    from './screens/ProfileScreen';
+import ShowcaseScreen   from './screens/ShowcaseScreen';
 
 /* ─── Floating background code ─── */
 const BG_SNIPPETS = [
@@ -161,6 +162,7 @@ function AppInner() {
     completion: <CompletionScreen {...props} />,
     ranking:    <RankingScreen    {...props} />,
     profile:    <ProfileScreen    {...props} />,
+    showcase:   <ShowcaseScreen   {...props} />,
   };
 
   return (
