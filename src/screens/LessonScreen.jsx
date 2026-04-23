@@ -3,7 +3,7 @@ import Stax from '../components/Stax';
 import CodeBlock from '../components/CodeBlock';
 import VisualExplain from '../components/VisualExplain';
 import { useTheme } from '../context/ThemeContext';
-import { getNodeQuestions } from '../data';
+import { getNodeQuestions, NODES_BY_TRACK } from '../data';
 
 export default function LessonScreen({ goTo, gs, setGs }) {
   const { t } = useTheme();
@@ -14,6 +14,7 @@ export default function LessonScreen({ goTo, gs, setGs }) {
   const [score, setScore]     = useState(0);
   const [qKey, setQKey]       = useState(0);
   const [hearts, setHearts]   = useState(5);
+  const [results, setResults] = useState([]);
 
   const QUESTIONS = getNodeQuestions(gs.track, gs.activeNode ?? 0, gs.language);
   const q = QUESTIONS[qIdx];
@@ -26,11 +27,17 @@ export default function LessonScreen({ goTo, gs, setGs }) {
     setSel(i); setCorrect(ok); setShowFb(true);
     if (ok) setScore(s => s + 1);
     else setHearts(h => Math.max(0, h - 1));
+    setResults(r => [...r, { sel: i, correct: ok, correctOpt: q.opts[q.answer], selOpt: q.opts[i] }]);
   };
 
   const cont = () => {
     if (isLast) {
       const earned = (score + (correct ? 1 : 0)) * 22 + 10;
+      const nodeList = NODES_BY_TRACK[gs.track] ?? NODES_BY_TRACK.frontend;
+      const nodeLabel = nodeList?.[gs.activeNode ?? 0]?.label ?? 'Lição';
+      const accuracy = results.length > 0
+        ? Math.round((results.filter(r => r.correct).length / results.length) * 100)
+        : (correct ? 100 : 0);
       setGs(s => {
         const completed = [...new Set([...(s.completedNodes ?? []), s.activeNode ?? 0])];
         const nextActive = (s.activeNode ?? 0) + 1;
@@ -40,6 +47,7 @@ export default function LessonScreen({ goTo, gs, setGs }) {
           coins: s.coins + Math.round(earned / 2),
           completedNodes: completed,
           activeNode: nextActive,
+          lastLesson: { results, earned, nodeLabel, accuracy },
         };
       });
       goTo('completion', 'right');

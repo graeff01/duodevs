@@ -16,12 +16,12 @@ function buildNodes(gs) {
   });
 }
 
-/* Node color/gradient by state */
+/* Node color/gradient by state — 145deg for 3D light-from-top-left */
 const nodeStyle = (node) => {
-  if (node.boss)                 return { bg: 'linear-gradient(135deg,#f97316,#ef4444)', shadow: 'rgba(239,68,68,.5)', border: '#ef4444' };
-  if (node.state === 'done')     return { bg: 'linear-gradient(135deg,#10b981,#059669)', shadow: 'rgba(16,185,129,.45)', border: '#10b981' };
-  if (node.state === 'active')   return { bg: 'linear-gradient(135deg,#5b5cf6,#7c3aed)', shadow: 'rgba(91,92,246,.55)', border: '#5b5cf6' };
-  return                                { bg: 'linear-gradient(135deg,#27234e,#1e1c3a)', shadow: 'rgba(0,0,0,.3)',     border: '#2d2b52' };
+  if (node.boss)               return { bg: 'linear-gradient(145deg,#fb923c,#ef4444,#b91c1c)', shadow: 'rgba(239,68,68,.6)',  border: '#ef4444' };
+  if (node.state === 'done')   return { bg: 'linear-gradient(145deg,#34d399,#10b981,#065f46)', shadow: 'rgba(16,185,129,.55)', border: '#10b981' };
+  if (node.state === 'active') return { bg: 'linear-gradient(145deg,#818cf8,#5b5cf6,#3730a3)', shadow: 'rgba(91,92,246,.65)', border: '#5b5cf6' };
+  return                              { bg: 'linear-gradient(145deg,#2d2b52,#1e1c3a,#151230)', shadow: 'rgba(0,0,0,.35)',      border: '#2d2b52' };
 };
 
 /* Connector state between nodes i → i+1 */
@@ -68,31 +68,30 @@ function Connector({ fromOffset, toOffset, state }) {
   );
 }
 
-/* ─── Single Map Node ─── */
+/* ─── Single Map Node — 3D style ─── */
 function MapNode({ node, onPress, t }) {
   const [pressed, setPressed] = useState(false);
   const ns = nodeStyle(node);
-  const size = node.boss ? 80 : node.state === 'active' ? 76 : 68;
+  const size = node.boss ? 82 : node.state === 'active' ? 78 : 70;
   const isLocked = node.state === 'locked';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0 }}>
 
-      {/* Node circle */}
       <div style={{ position: 'relative' }}>
 
-        {/* Pulse rings for active */}
+        {/* Pulse rings */}
         {node.state === 'active' && (
           <>
             <div style={{
-              position: 'absolute', inset: -14, borderRadius: '50%',
-              border: '2px solid rgba(91,92,246,.35)',
+              position: 'absolute', inset: -16, borderRadius: '50%',
+              border: '2px solid rgba(91,92,246,.28)',
               animation: 'ringPulse 2s ease-out infinite',
             }} />
             <div style={{
-              position: 'absolute', inset: -8, borderRadius: '50%',
-              border: '2px solid rgba(91,92,246,.5)',
-              animation: 'ringPulse 2s .5s ease-out infinite',
+              position: 'absolute', inset: -9, borderRadius: '50%',
+              border: '2px solid rgba(91,92,246,.45)',
+              animation: 'ringPulse 2s .55s ease-out infinite',
             }} />
           </>
         )}
@@ -100,12 +99,22 @@ function MapNode({ node, onPress, t }) {
         {/* Boss glow */}
         {node.boss && (
           <div style={{
-            position: 'absolute', inset: -12, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(249,115,22,.3) 0%, transparent 70%)',
+            position: 'absolute', inset: -14, borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(249,115,22,.28) 0%, transparent 70%)',
             animation: 'pulse2 2s ease-in-out infinite',
           }} />
         )}
 
+        {/* 3D ground shadow ellipse */}
+        <div style={{
+          position: 'absolute', bottom: -10, left: '50%',
+          transform: 'translateX(-50%)',
+          width: size * 0.76, height: 14, borderRadius: '50%',
+          background: isLocked ? 'rgba(0,0,0,.2)' : 'rgba(0,0,0,.55)',
+          filter: 'blur(7px)', zIndex: 0,
+        }} />
+
+        {/* Node button */}
         <div
           onMouseDown={() => !isLocked && setPressed(true)}
           onMouseUp={() => setPressed(false)}
@@ -116,40 +125,54 @@ function MapNode({ node, onPress, t }) {
           style={{
             width: size, height: size, borderRadius: '50%',
             background: ns.bg,
-            border: `3px solid ${ns.border}`,
-            boxShadow: isLocked ? 'none' : `0 8px 28px ${ns.shadow}, 0 0 0 1px rgba(255,255,255,.08)`,
+            border: `2.5px solid ${ns.border}`,
+            boxShadow: isLocked ? 'none' : [
+              `0 12px 32px ${ns.shadow}`,
+              `0 5px 0 rgba(0,0,0,.42)`,
+              `inset 0 1px 0 rgba(255,255,255,.22)`,
+              `0 0 0 1px rgba(255,255,255,.06)`,
+            ].join(', '),
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: isLocked ? 'default' : 'pointer',
-            transition: 'transform .15s, box-shadow .15s',
-            transform: pressed ? 'scale(.92)' : 'scale(1)',
-            opacity: isLocked ? 0.6 : 1,
-            position: 'relative', zIndex: 2,
-            flexShrink: 0,
+            transition: 'transform .14s, box-shadow .14s',
+            transform: pressed ? 'scale(.91) translateY(4px)' : 'scale(1)',
+            opacity: isLocked ? 0.48 : 1,
+            position: 'relative', zIndex: 2, flexShrink: 0,
           }}
         >
+          {/* Inner specular highlight */}
+          {!isLocked && (
+            <div style={{
+              position: 'absolute', top: '11%', left: '14%',
+              width: '44%', height: '36%', borderRadius: '50%',
+              background: 'rgba(255,255,255,.18)',
+              filter: 'blur(4px)', pointerEvents: 'none',
+            }} />
+          )}
+
           {node.state === 'done'
-            ? <span style={{ fontSize: 26, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,.4))' }}>✓</span>
+            ? <span style={{ fontSize: 26, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,.5))' }}>✓</span>
             : node.state === 'locked' && !node.boss
-            ? <span style={{ fontSize: 22, opacity: 0.7 }}>🔒</span>
-            : <span style={{ fontSize: node.boss ? 32 : 26, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,.5))' }}>{node.emoji}</span>
+            ? <span style={{ fontSize: 22, opacity: 0.6 }}>🔒</span>
+            : <span style={{ fontSize: node.boss ? 32 : 26, filter: 'drop-shadow(0 2px 6px rgba(0,0,0,.55))' }}>{node.emoji}</span>
           }
         </div>
 
-        {/* "AQUI" badge for active */}
+        {/* "AQUI" badge */}
         {node.state === 'active' && (
           <div style={{
-            position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
+            position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)',
             background: '#f59e0b', color: '#1a1740',
             borderRadius: 8, padding: '3px 9px',
             fontSize: 9, fontWeight: 900, letterSpacing: '.06em',
-            whiteSpace: 'nowrap', boxShadow: '0 3px 10px rgba(245,158,11,.5)',
+            whiteSpace: 'nowrap', boxShadow: '0 3px 12px rgba(245,158,11,.55)',
             animation: 'fadeIn .3s ease',
           }}>VOCÊ ESTÁ AQUI ▼</div>
         )}
       </div>
 
       {/* Label + stars */}
-      <div style={{ marginTop: 10, textAlign: 'center', minWidth: 80, maxWidth: 90 }}>
+      <div style={{ marginTop: 14, textAlign: 'center', minWidth: 80, maxWidth: 90 }}>
         <div style={{
           fontSize: 12, fontWeight: 800,
           color: node.state === 'active' ? '#a5b4fc'
@@ -159,7 +182,6 @@ function MapNode({ node, onPress, t }) {
           lineHeight: 1.3,
         }}>{node.label}</div>
 
-        {/* Stars for done */}
         {node.state === 'done' && (
           <div style={{ display: 'flex', gap: 1, justifyContent: 'center', marginTop: 3 }}>
             {[0,1,2].map(s => (
@@ -168,7 +190,6 @@ function MapNode({ node, onPress, t }) {
           </div>
         )}
 
-        {/* XP badge for locked/active */}
         {node.state !== 'done' && (
           <div style={{
             fontSize: 10, fontWeight: 700, marginTop: 4,
@@ -177,7 +198,7 @@ function MapNode({ node, onPress, t }) {
         )}
       </div>
 
-      {/* Active node CTA card */}
+      {/* Active CTA card */}
       {node.state === 'active' && (
         <div
           onClick={onPress}
@@ -185,9 +206,9 @@ function MapNode({ node, onPress, t }) {
             marginTop: 12, background: 'linear-gradient(135deg,#5b5cf6,#7c3aed)',
             borderRadius: 14, padding: '10px 20px',
             display: 'flex', alignItems: 'center', gap: 8,
-            boxShadow: '0 8px 24px rgba(91,92,246,.45)',
+            boxShadow: '0 8px 24px rgba(91,92,246,.5), 0 3px 0 rgba(0,0,0,.35)',
             cursor: 'pointer', animation: 'fadeUp .4s ease',
-            border: '1px solid rgba(255,255,255,.12)',
+            border: '1px solid rgba(255,255,255,.14)',
           }}
         >
           <span style={{ fontSize: 16 }}>▶</span>
@@ -197,6 +218,37 @@ function MapNode({ node, onPress, t }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/* ─── Animated cloud layer ─── */
+function CloudLayer({ isDark }) {
+  const clouds = [
+    { w: 190, h: 58, top: '6%',  left: '2%',  op: 0.062, dur: 20, delay: 0 },
+    { w: 130, h: 44, top: '19%', left: '57%', op: 0.048, dur: 27, delay: -7 },
+    { w: 230, h: 74, top: '34%', left: '-7%', op: 0.068, dur: 17, delay: -4 },
+    { w: 105, h: 36, top: '52%', left: '63%', op: 0.042, dur: 31, delay: -13 },
+    { w: 175, h: 60, top: '68%', left: '7%',  op: 0.058, dur: 23, delay: -9 },
+    { w: 95,  h: 32, top: '83%', left: '51%', op: 0.05,  dur: 19, delay: -3 },
+  ];
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
+      <style>{`
+        @keyframes cldA { 0%,100%{transform:translate(0,0)} 33%{transform:translate(14px,-5px)} 66%{transform:translate(-9px,6px)} }
+        @keyframes cldB { 0%,100%{transform:translate(0,0)} 33%{transform:translate(-12px,8px)} 66%{transform:translate(10px,-4px)} }
+        @keyframes cldC { 0%,100%{transform:translate(0,0)} 50%{transform:translate(9px,9px)} }
+      `}</style>
+      {clouds.map((c, i) => (
+        <div key={i} style={{
+          position: 'absolute', top: c.top, left: c.left,
+          width: c.w, height: c.h, borderRadius: '50%',
+          background: isDark ? 'rgba(180,180,255,1)' : 'rgba(255,255,255,1)',
+          filter: `blur(${isDark ? 26 : 20}px)`,
+          opacity: c.op,
+          animation: `${['cldA','cldB','cldC'][i % 3]} ${c.dur}s ${c.delay}s ease-in-out infinite`,
+        }} />
+      ))}
     </div>
   );
 }
@@ -365,6 +417,7 @@ export default function MapScreen({ goTo, gs }) {
 
       {/* Map texture — fixed behind everything, does NOT scroll */}
       <MapBg isDark={t.isDark} />
+      <CloudLayer isDark={t.isDark} />
 
       {/* Status bar */}
       <div className="sbar" style={{ color: t.statusBar, flexShrink: 0, position: 'relative', zIndex: 1 }}>
